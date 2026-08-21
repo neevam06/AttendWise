@@ -1,11 +1,18 @@
-from datetime import datetime
+from datetime import date, datetime
 from math import ceil
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 
-from .models import Semester, Timetable, Attendance
+from .models import Timetable, Attendance
+
+
+# =========================================================
+# ATTENDWISE SEMESTER START
+# =========================================================
+
+SEMESTER_START_DATE = date(2026, 7, 22)
 
 
 # =========================================================
@@ -31,6 +38,7 @@ def dashboard(request):
     if selected_date_text:
 
         try:
+
             selected_date = datetime.strptime(
                 selected_date_text,
                 "%Y-%m-%d"
@@ -45,47 +53,53 @@ def dashboard(request):
     # =====================================================
 
     if selected_date > today:
+
         selected_date = today
+
+    # =====================================================
+    # PREVENT DATE BEFORE SEMESTER
+    # =====================================================
+
+    if selected_date < SEMESTER_START_DATE:
+
+        selected_date = SEMESTER_START_DATE
+
+    # =====================================================
+    # SELECTED DAY
+    # =====================================================
 
     selected_day_name = selected_date.strftime("%A")
 
     # =====================================================
-    # ACTIVE SEMESTER
-    # =====================================================
-
-    semester = Semester.objects.filter(
-        active=True
-    ).order_by(
-        "-start_date"
-    ).first()
-
-    # =====================================================
-    # SELECTED DATE LECTURES
+    # GET LECTURES FOR SELECTED DAY
     # =====================================================
 
     selected_lectures = list(
+
         Timetable.objects.filter(
             day=selected_day_name
-        ).select_related(
-            "subject"
-        ).order_by(
-            "lecture_number"
         )
+        .select_related("subject")
+        .order_by("lecture_number")
+
     )
 
     # =====================================================
-    # SELECTED DATE ATTENDANCE
+    # ATTENDANCE FOR SELECTED DATE
     # =====================================================
 
     selected_attendance = {
+
         record.timetable_id: record.status
+
         for record in Attendance.objects.filter(
             date=selected_date
         )
+
     }
 
     # =====================================================
-    # ADD STATUS TO EACH LECTURE
+    # ADD STATUS TO LECTURES
     # =====================================================
 
     for lecture in selected_lectures:
@@ -95,31 +109,23 @@ def dashboard(request):
         )
 
     # =====================================================
-    # ATTENDANCE RECORDS
+    # ALL ATTENDANCE RECORDS
     # =====================================================
 
-    records = Attendance.objects.filter(
-        timetable__compulsory=True
-    ).exclude(
-        status="NOT_HELD"
-    )
+    records = (
 
-    # =====================================================
-    # SEMESTER FILTER
-    # =====================================================
+        Attendance.objects
 
-    if semester:
-
-        records = records.filter(
-            date__gte=semester.start_date
+        .filter(
+            date__gte=SEMESTER_START_DATE,
+            date__lte=today,
+            timetable__compulsory=True
         )
 
-    # =====================================================
-    # NEVER COUNT FUTURE RECORDS
-    # =====================================================
+        .exclude(
+            status="NOT_HELD"
+        )
 
-    records = records.filter(
-        date__lte=today
     )
 
     # =====================================================
@@ -135,6 +141,10 @@ def dashboard(request):
     bunked = records.filter(
         status="BUNK"
     ).count()
+
+    # =====================================================
+    # PERCENTAGE
+    # =====================================================
 
     if conducted > 0:
 
@@ -155,7 +165,11 @@ def dashboard(request):
     if conducted > 0 and percentage >= 75:
 
         possible_bunks = int(
-            (present / 0.75) - conducted
+
+            (present / 0.75)
+
+            - conducted
+
         )
 
         possible_bunks = max(
@@ -172,7 +186,13 @@ def dashboard(request):
     if conducted > 0 and percentage < 75:
 
         lectures_needed = ceil(
-            (0.75 * conducted - present) / 0.25
+
+            (
+                0.75 * conducted
+                - present
+            )
+            / 0.25
+
         )
 
     # =====================================================
@@ -181,44 +201,95 @@ def dashboard(request):
 
     subject_data = []
 
-    subject_ids = records.values_list(
-        "timetable__subject_id",
-        flat=True
-    ).distinct()
+    subject_ids = (
+
+        records
+
+        .values_list(
+            "timetable__subject_id",
+            flat=True
+        )
+
+        .distinct()
+
+    )
 
     for subject_id in subject_ids:
 
         subject_records = records.filter(
+
             timetable__subject_id=subject_id
+
         )
 
-        first_record = subject_records.select_related(
-            "timetable__subject"
-        ).first()
+        first_record = (
+
+            subject_records
+
+            .select_related(
+                "timetable__subject"
+            )
+
+            .first()
+
+        )
 
         if first_record is None:
+
             continue
 
-        subject_conducted = subject_records.count()
+        # -----------------------------------------------
+        # SUBJECT COUNTS
+        # -----------------------------------------------
 
-        subject_present = subject_records.filter(
-            status="PRESENT"
-        ).count()
+        subject_conducted = (
+            subject_records.count()
+        )
 
-        subject_bunked = subject_records.filter(
-            status="BUNK"
-        ).count()
+        subject_present = (
+
+            subject_records
+
+            .filter(
+                status="PRESENT"
+            )
+
+            .count()
+
+        )
+
+        subject_bunked = (
+
+            subject_records
+
+            .filter(
+                status="BUNK"
+            )
+
+            .count()
+
+        )
+
+        # -----------------------------------------------
+        # SUBJECT PERCENTAGE
+        # -----------------------------------------------
 
         if subject_conducted > 0:
 
             subject_percentage = (
-                subject_present /
-                subject_conducted
+
+                subject_present
+                / subject_conducted
+
             ) * 100
 
         else:
 
             subject_percentage = 0
+
+        # -----------------------------------------------
+        # ADD SUBJECT
+        # -----------------------------------------------
 
         subject_data.append({
 
@@ -239,6 +310,7 @@ def dashboard(request):
                     subject_percentage,
                     2
                 ),
+
         })
 
     # =====================================================
@@ -246,7 +318,10 @@ def dashboard(request):
     # =====================================================
 
     subject_data.sort(
-        key=lambda item: item["subject"].name
+
+        key=lambda item:
+        item["subject"].name
+
     )
 
     # =====================================================
@@ -269,12 +344,8 @@ def dashboard(request):
                 "%Y-%m-%d"
             ),
 
-        "semester":
-            semester,
-
         "semester_start":
-            semester.start_date
-            if semester else None,
+            SEMESTER_START_DATE,
 
         "todays_lectures":
             selected_lectures,
@@ -305,12 +376,21 @@ def dashboard(request):
 
         "subject_data":
             subject_data,
+
     }
 
+    # =====================================================
+    # RENDER DASHBOARD
+    # =====================================================
+
     return render(
+
         request,
+
         "attendance/dashboard.html",
+
         context
+
     )
 
 
@@ -325,12 +405,15 @@ def mark_attendance(
 ):
 
     # =====================================================
-    # GET TIMETABLE
+    # GET LECTURE
     # =====================================================
 
     timetable = get_object_or_404(
+
         Timetable,
+
         id=timetable_id
+
     )
 
     # =====================================================
@@ -346,9 +429,11 @@ def mark_attendance(
     # =====================================================
 
     if status not in [
+
         "PRESENT",
         "BUNK",
         "NOT_HELD"
+
     ]:
 
         return redirect(
@@ -356,11 +441,13 @@ def mark_attendance(
         )
 
     # =====================================================
-    # GET SELECTED DATE
+    # GET DATE
     # =====================================================
 
     selected_date_text = request.POST.get(
+
         "attendance_date"
+
     )
 
     today = timezone.localdate()
@@ -368,24 +455,37 @@ def mark_attendance(
     try:
 
         attendance_date = datetime.strptime(
+
             selected_date_text,
+
             "%Y-%m-%d"
+
         ).date()
 
     except (
+
         ValueError,
         TypeError
+
     ):
 
         attendance_date = today
 
     # =====================================================
-    # NEVER ALLOW FUTURE ATTENDANCE
+    # PREVENT FUTURE DATE
     # =====================================================
 
     if attendance_date > today:
 
         attendance_date = today
+
+    # =====================================================
+    # PREVENT DATE BEFORE SEMESTER
+    # =====================================================
+
+    if attendance_date < SEMESTER_START_DATE:
+
+        attendance_date = SEMESTER_START_DATE
 
     # =====================================================
     # SAVE / UPDATE ATTENDANCE
@@ -398,15 +498,22 @@ def mark_attendance(
         timetable=timetable,
 
         defaults={
-            "status": status
+
+            "status":
+                status
+
         }
+
     )
 
     # =====================================================
-    # RETURN TO THE SAME LECTURE
+    # RETURN TO SAME DATE + SAME LECTURE
     # =====================================================
 
     return redirect(
-        f"/?date={attendance_date.strftime('%Y-%m-%d')}"
+
+        f"/?date="
+        f"{attendance_date.strftime('%Y-%m-%d')}"
         f"#lecture-{timetable.id}"
+
     )
