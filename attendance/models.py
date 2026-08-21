@@ -1,13 +1,49 @@
 from django.db import models
 
 
-class Subject(models.Model):
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=20, blank=True)
+# =========================================================
+# SEMESTER
+# =========================================================
+
+class Semester(models.Model):
+
+    name = models.CharField(
+        max_length=100,
+        default="Current Semester"
+    )
+
+    start_date = models.DateField()
+
+    active = models.BooleanField(
+        default=True
+    )
 
     def __str__(self):
         return self.name
 
+
+# =========================================================
+# SUBJECT
+# =========================================================
+
+class Subject(models.Model):
+
+    name = models.CharField(
+        max_length=100
+    )
+
+    code = models.CharField(
+        max_length=20,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.name
+
+
+# =========================================================
+# TIMETABLE
+# =========================================================
 
 class Timetable(models.Model):
 
@@ -53,6 +89,10 @@ class Timetable(models.Model):
         )
 
 
+# =========================================================
+# ATTENDANCE
+# =========================================================
+
 class Attendance(models.Model):
 
     STATUS = [
@@ -72,6 +112,14 @@ class Attendance(models.Model):
         max_length=10,
         choices=STATUS
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['date', 'timetable'],
+                name='unique_attendance_per_lecture'
+            )
+        ]
 
     def __str__(self):
         return (
