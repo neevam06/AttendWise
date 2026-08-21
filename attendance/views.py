@@ -1,84 +1,172 @@
-from datetime import date
+from datetime import datetime
 from math import ceil
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 
-from .models import Timetable, Attendance
+from .models import Semester, Timetable, Attendance
 
+
+# =========================================================
+# DASHBOARD
+# =========================================================
 
 def dashboard(request):
-    today = date.today()
 
-    day_names = [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-    ]
+    # =====================================================
+    # CURRENT DATE
+    # =====================================================
 
-    today_name = day_names[today.weekday()]
+    today = timezone.localdate()
 
-    # Get today's lectures
-    todays_lectures = Timetable.objects.filter(
-        day=today_name
-    ).order_by('lecture_number')
+    # =====================================================
+    # SELECTED DATE
+    # =====================================================
 
-    # Get today's attendance records
-    today_records = Attendance.objects.filter(
-        date=today
+    selected_date_text = request.GET.get("date")
+
+    selected_date = today
+
+    if selected_date_text:
+
+        try:
+            selected_date = datetime.strptime(
+                selected_date_text,
+                "%Y-%m-%d"
+            ).date()
+
+        except (ValueError, TypeError):
+
+            selected_date = today
+
+    # =====================================================
+    # PREVENT FUTURE DATE
+    # =====================================================
+
+    if selected_date > today:
+        selected_date = today
+
+    selected_day_name = selected_date.strftime("%A")
+
+    # =====================================================
+    # ACTIVE SEMESTER
+    # =====================================================
+
+    semester = Semester.objects.filter(
+        active=True
+    ).order_by(
+        "-start_date"
+    ).first()
+
+    # =====================================================
+    # SELECTED DATE LECTURES
+    # =====================================================
+
+    selected_lectures = list(
+        Timetable.objects.filter(
+            day=selected_day_name
+        ).select_related(
+            "subject"
+        ).order_by(
+            "lecture_number"
+        )
     )
 
-    # Attach today's attendance status to each lecture
-    attendance_map = {
+    # =====================================================
+    # SELECTED DATE ATTENDANCE
+    # =====================================================
+
+    selected_attendance = {
         record.timetable_id: record.status
-        for record in today_records
+        for record in Attendance.objects.filter(
+            date=selected_date
+        )
     }
 
-    for lecture in todays_lectures:
-        lecture.today_status = attendance_map.get(
+    # =====================================================
+    # ADD STATUS TO EACH LECTURE
+    # =====================================================
+
+    for lecture in selected_lectures:
+
+        lecture.today_status = selected_attendance.get(
             lecture.id
         )
 
-    # Get all compulsory attendance records
+    # =====================================================
+    # ATTENDANCE RECORDS
+    # =====================================================
+
     records = Attendance.objects.filter(
         timetable__compulsory=True
     ).exclude(
-        status='NOT_HELD'
+        status="NOT_HELD"
     )
+
+    # =====================================================
+    # SEMESTER FILTER
+    # =====================================================
+
+    if semester:
+
+        records = records.filter(
+            date__gte=semester.start_date
+        )
+
+    # =====================================================
+    # NEVER COUNT FUTURE RECORDS
+    # =====================================================
+
+    records = records.filter(
+        date__lte=today
+    )
+
+    # =====================================================
+    # OVERALL ATTENDANCE
+    # =====================================================
 
     conducted = records.count()
 
     present = records.filter(
-        status='PRESENT'
+        status="PRESENT"
     ).count()
 
     bunked = records.filter(
-        status='BUNK'
+        status="BUNK"
     ).count()
 
-    # Attendance percentage
     if conducted > 0:
-        percentage = (present / conducted) * 100
+
+        percentage = (
+            present / conducted
+        ) * 100
+
     else:
+
         percentage = 0
 
-    # Calculate safe bunks
+    # =====================================================
+    # POSSIBLE BUNKS
+    # =====================================================
+
+    possible_bunks = 0
+
     if conducted > 0 and percentage >= 75:
 
         possible_bunks = int(
             (present / 0.75) - conducted
         )
 
-        if possible_bunks < 0:
-            possible_bunks = 0
+        possible_bunks = max(
+            possible_bunks,
+            0
+        )
 
-    else:
-        possible_bunks = 0
+    # =====================================================
+    # LECTURES NEEDED TO REACH 75%
+    # =====================================================
 
-    # Calculate lectures needed
     lectures_needed = 0
 
     if conducted > 0 and percentage < 75:
@@ -87,99 +175,238 @@ def dashboard(request):
             (0.75 * conducted - present) / 0.25
         )
 
+    # =====================================================
+    # SUBJECT-WISE ATTENDANCE
+    # =====================================================
+
+    subject_data = []
+
+    subject_ids = records.values_list(
+        "timetable__subject_id",
+        flat=True
+    ).distinct()
+
+    for subject_id in subject_ids:
+
+        subject_records = records.filter(
+            timetable__subject_id=subject_id
+        )
+
+        first_record = subject_records.select_related(
+            "timetable__subject"
+        ).first()
+
+        if first_record is None:
+            continue
+
+        subject_conducted = subject_records.count()
+
+        subject_present = subject_records.filter(
+            status="PRESENT"
+        ).count()
+
+        subject_bunked = subject_records.filter(
+            status="BUNK"
+        ).count()
+
+        if subject_conducted > 0:
+
+            subject_percentage = (
+                subject_present /
+                subject_conducted
+            ) * 100
+
+        else:
+
+            subject_percentage = 0
+
+        subject_data.append({
+
+            "subject":
+                first_record.timetable.subject,
+
+            "present":
+                subject_present,
+
+            "bunked":
+                subject_bunked,
+
+            "conducted":
+                subject_conducted,
+
+            "percentage":
+                round(
+                    subject_percentage,
+                    2
+                ),
+        })
+
+    # =====================================================
+    # SORT SUBJECTS
+    # =====================================================
+
+    subject_data.sort(
+        key=lambda item: item["subject"].name
+    )
+
+    # =====================================================
+    # CONTEXT
+    # =====================================================
+
     context = {
-        'today': today,
-        'today_name': today_name,
-        'todays_lectures': todays_lectures,
 
-        'present': present,
-        'bunked': bunked,
-        'conducted': conducted,
-        'percentage': round(percentage, 2),
+        "today":
+            today,
 
-        'possible_bunks': possible_bunks,
-        'lectures_needed': lectures_needed,
+        "today_name":
+            selected_day_name,
+
+        "selected_date":
+            selected_date,
+
+        "selected_date_value":
+            selected_date.strftime(
+                "%Y-%m-%d"
+            ),
+
+        "semester":
+            semester,
+
+        "semester_start":
+            semester.start_date
+            if semester else None,
+
+        "todays_lectures":
+            selected_lectures,
+
+        "today_attendance":
+            selected_attendance,
+
+        "present":
+            present,
+
+        "bunked":
+            bunked,
+
+        "conducted":
+            conducted,
+
+        "percentage":
+            round(
+                percentage,
+                2
+            ),
+
+        "possible_bunks":
+            possible_bunks,
+
+        "lectures_needed":
+            lectures_needed,
+
+        "subject_data":
+            subject_data,
     }
 
     return render(
         request,
-        'attendance/dashboard.html',
+        "attendance/dashboard.html",
         context
     )
 
 
-@require_POST
-def mark_attendance(request, timetable_id):
+# =========================================================
+# MARK ATTENDANCE
+# =========================================================
 
-    timetable = Timetable.objects.get(
+@require_POST
+def mark_attendance(
+    request,
+    timetable_id
+):
+
+    # =====================================================
+    # GET TIMETABLE
+    # =====================================================
+
+    timetable = get_object_or_404(
+        Timetable,
         id=timetable_id
     )
 
-    status = request.POST.get('status')
+    # =====================================================
+    # GET STATUS
+    # =====================================================
+
+    status = request.POST.get(
+        "status"
+    )
+
+    # =====================================================
+    # VALIDATE STATUS
+    # =====================================================
 
     if status not in [
-        'PRESENT',
-        'BUNK',
-        'NOT_HELD'
+        "PRESENT",
+        "BUNK",
+        "NOT_HELD"
     ]:
-        return redirect('dashboard')
 
-    Attendance.objects.update_or_create(
-        date=date.today(),
-        timetable=timetable,
-        defaults={
-            'status': status
-        }
-    )
-
-    return redirect('dashboard')
-
-
-def subject_attendance(request):
-
-    subjects = []
-
-    all_subjects = Timetable.objects.values(
-        'subject_id',
-        'subject__name'
-    ).distinct().order_by(
-        'subject__name'
-    )
-
-    for item in all_subjects:
-
-        subject_id = item['subject_id']
-        subject_name = item['subject__name']
-
-        records = Attendance.objects.filter(
-            timetable__subject_id=subject_id,
-            timetable__compulsory=True
-        ).exclude(
-            status='NOT_HELD'
+        return redirect(
+            "dashboard"
         )
 
-        conducted = records.count()
+    # =====================================================
+    # GET SELECTED DATE
+    # =====================================================
 
-        present = records.filter(
-            status='PRESENT'
-        ).count()
+    selected_date_text = request.POST.get(
+        "attendance_date"
+    )
 
-        if conducted > 0:
-            percentage = (present / conducted) * 100
-        else:
-            percentage = 0
+    today = timezone.localdate()
 
-        subjects.append({
-            'name': subject_name,
-            'present': present,
-            'conducted': conducted,
-            'percentage': round(percentage, 2),
-        })
+    try:
 
-    return render(
-        request,
-        'attendance/subjects.html',
-        {
-            'subjects': subjects
+        attendance_date = datetime.strptime(
+            selected_date_text,
+            "%Y-%m-%d"
+        ).date()
+
+    except (
+        ValueError,
+        TypeError
+    ):
+
+        attendance_date = today
+
+    # =====================================================
+    # NEVER ALLOW FUTURE ATTENDANCE
+    # =====================================================
+
+    if attendance_date > today:
+
+        attendance_date = today
+
+    # =====================================================
+    # SAVE / UPDATE ATTENDANCE
+    # =====================================================
+
+    Attendance.objects.update_or_create(
+
+        date=attendance_date,
+
+        timetable=timetable,
+
+        defaults={
+            "status": status
         }
+    )
+
+    # =====================================================
+    # RETURN TO THE SAME LECTURE
+    # =====================================================
+
+    return redirect(
+        f"/?date={attendance_date.strftime('%Y-%m-%d')}"
+        f"#lecture-{timetable.id}"
     )

@@ -12,287 +12,1669 @@
 
     <title>AttendWise</title>
 
+
     <style>
 
+        /* =====================================================
+           ROOT
+        ===================================================== */
+
+        :root {
+
+            --bg: #070816;
+            --bg-soft: #0d1022;
+
+            --card: rgba(19, 23, 48, 0.78);
+            --card-light: rgba(30, 35, 68, 0.72);
+
+            --border: rgba(255, 255, 255, 0.09);
+
+            --text: #f8fafc;
+            --muted: #94a3b8;
+
+            --purple: #8b5cf6;
+            --blue: #3b82f6;
+            --cyan: #06b6d4;
+
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+
+            --shadow:
+                0 20px 60px rgba(0, 0, 0, 0.35);
+
+            --radius: 24px;
+
+        }
+
+
+        /* =====================================================
+           RESET
+        ===================================================== */
+
         * {
-            box-sizing: border-box;
+
             margin: 0;
             padding: 0;
+
+            box-sizing: border-box;
+
         }
+
+
+        html {
+
+            scroll-behavior: smooth;
+
+        }
+
 
         body {
-            font-family: Arial, sans-serif;
-            background: #0f172a;
-            color: white;
+
             min-height: 100vh;
+
+            color: var(--text);
+
+            font-family:
+                Inter,
+                ui-sans-serif,
+                system-ui,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+
+                radial-gradient(
+                    circle at 10% 10%,
+                    rgba(139, 92, 246, 0.18),
+                    transparent 28%
+                ),
+
+                radial-gradient(
+                    circle at 90% 15%,
+                    rgba(59, 130, 246, 0.16),
+                    transparent 28%
+                ),
+
+                radial-gradient(
+                    circle at 50% 100%,
+                    rgba(6, 182, 212, 0.10),
+                    transparent 30%
+                ),
+
+                var(--bg);
+
+            overflow-x: hidden;
+
         }
 
-        .container {
-            width: 92%;
-            max-width: 700px;
+
+        /* =====================================================
+           BACKGROUND GLOW
+        ===================================================== */
+
+        body::before {
+
+            content: "";
+
+            position: fixed;
+
+            width: 500px;
+            height: 500px;
+
+            top: -250px;
+            left: -200px;
+
+            background:
+                rgba(139, 92, 246, 0.08);
+
+            filter: blur(100px);
+
+            border-radius: 50%;
+
+            pointer-events: none;
+
+        }
+
+
+        body::after {
+
+            content: "";
+
+            position: fixed;
+
+            width: 450px;
+            height: 450px;
+
+            bottom: -220px;
+            right: -180px;
+
+            background:
+                rgba(59, 130, 246, 0.08);
+
+            filter: blur(100px);
+
+            border-radius: 50%;
+
+            pointer-events: none;
+
+        }
+
+
+        /* =====================================================
+           MAIN WRAPPER
+        ===================================================== */
+
+        .app {
+
+            width: min(
+                1400px,
+                calc(100% - 40px)
+            );
+
             margin: auto;
-            padding: 20px 0 40px;
+
+            padding: 30px 0 70px;
+
+            position: relative;
+
+            z-index: 1;
+
         }
 
-        /* =========================
+
+        /* =====================================================
            HEADER
-        ========================= */
+        ===================================================== */
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
+        .topbar {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 28px;
+
         }
 
-        .header h1 {
-            font-size: 30px;
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
         }
 
-        .header p {
-            color: #94a3b8;
-            margin-top: 5px;
+
+        .brand-icon {
+
+            width: 52px;
+            height: 52px;
+
+            border-radius: 17px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 25px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--blue)
+                );
+
+            box-shadow:
+                0 10px 30px
+                rgba(99, 102, 241, 0.35);
+
         }
 
-        /* =========================
-           ATTENDANCE CARD
-        ========================= */
 
-        .attendance-card {
-            background: #1e293b;
-            border-radius: 22px;
-            padding: 25px;
-            text-align: center;
-            margin-bottom: 20px;
+        .brand-text h1 {
+
+            font-size: 25px;
+
+            letter-spacing: -0.5px;
+
         }
 
-        .required {
-            color: #94a3b8;
+
+        .brand-text p {
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            margin-top: 3px;
+
         }
 
-        .percentage {
-            font-size: 52px;
-            font-weight: bold;
-            margin: 10px 0;
+
+        .date-badge {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 11px 16px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255,255,255,0.05);
+
+            border:
+                1px solid var(--border);
+
+            color: #cbd5e1;
+
+            font-size: 13px;
+
         }
 
-        .safe {
-            color: #22c55e;
+
+        /* =====================================================
+           GLASS CARD
+        ===================================================== */
+
+        .glass {
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255,255,255,0.065),
+                    rgba(255,255,255,0.025)
+                );
+
+            border:
+                1px solid var(--border);
+
+            backdrop-filter: blur(18px);
+
+            -webkit-backdrop-filter: blur(18px);
+
+            box-shadow: var(--shadow);
+
         }
 
-        .warning {
-            color: #facc15;
-        }
 
-        .danger {
-            color: #ef4444;
-        }
+        /* =====================================================
+           DESKTOP GRID
+        ===================================================== */
 
-        /* =========================
-           STATISTICS
-        ========================= */
+        .dashboard-grid {
 
-        .stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
+
+            grid-template-columns:
+                minmax(0, 1.35fr)
+                minmax(350px, 0.65fr);
+
+            gap: 22px;
+
+            align-items: start;
+
         }
+
+
+        /* =====================================================
+           LEFT COLUMN
+        ===================================================== */
+
+        .left-column {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 22px;
+
+        }
+
+
+        /* =====================================================
+           RIGHT COLUMN
+        ===================================================== */
+
+        .right-column {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 22px;
+
+            position: sticky;
+
+            top: 20px;
+
+        }
+
+
+        /* =====================================================
+           HERO ATTENDANCE
+        ===================================================== */
+
+        .hero {
+
+            border-radius: 30px;
+
+            padding: 30px;
+
+            overflow: hidden;
+
+            position: relative;
+
+        }
+
+
+        .hero::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 280px;
+            height: 280px;
+
+            right: -100px;
+            top: -120px;
+
+            background:
+                rgba(139, 92, 246, 0.18);
+
+            filter: blur(60px);
+
+            border-radius: 50%;
+
+        }
+
+
+        .hero-top {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: flex-start;
+
+            position: relative;
+
+            z-index: 1;
+
+        }
+
+
+        .hero-label {
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1.5px;
+
+            font-weight: 700;
+
+        }
+
+
+        .hero-title {
+
+            font-size: 30px;
+
+            margin-top: 7px;
+
+            letter-spacing: -1px;
+
+        }
+
+
+        .status-pill {
+
+            padding: 8px 13px;
+
+            border-radius: 30px;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            letter-spacing: .4px;
+
+        }
+
+
+        .status-safe {
+
+            color: #86efac;
+
+            background:
+                rgba(34,197,94,.12);
+
+            border:
+                1px solid rgba(34,197,94,.25);
+
+        }
+
+
+        .status-warning {
+
+            color: #fde68a;
+
+            background:
+                rgba(245,158,11,.12);
+
+            border:
+                1px solid rgba(245,158,11,.25);
+
+        }
+
+
+        .status-danger {
+
+            color: #fca5a5;
+
+            background:
+                rgba(239,68,68,.12);
+
+            border:
+                1px solid rgba(239,68,68,.25);
+
+        }
+
+
+        /* =====================================================
+           ATTENDANCE RING
+        ===================================================== */
+
+        .ring-area {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 30px 0;
+
+        }
+
+
+        .ring {
+
+            --percentage:
+                {{ percentage }}%;
+
+            width: 210px;
+            height: 210px;
+
+            border-radius: 50%;
+
+            background:
+
+                conic-gradient(
+                    from -90deg,
+                    var(--purple) 0 var(--percentage),
+                    rgba(255,255,255,.08)
+                    var(--percentage) 100%
+                );
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            box-shadow:
+                0 0 50px
+                rgba(139,92,246,.15);
+
+            position: relative;
+
+        }
+
+
+        .ring::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 166px;
+            height: 166px;
+
+            border-radius: 50%;
+
+            background:
+                #10142a;
+
+            border:
+                1px solid
+                rgba(255,255,255,.06);
+
+        }
+
+
+        .ring-content {
+
+            position: relative;
+
+            z-index: 1;
+
+            text-align: center;
+
+        }
+
+
+        .ring-value {
+
+            font-size: 40px;
+
+            font-weight: 900;
+
+            letter-spacing: -2px;
+
+        }
+
+
+        .ring-target {
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            margin-top: 2px;
+
+        }
+
+
+        /* =====================================================
+           STATS
+        ===================================================== */
+
+        .stats-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 12px;
+
+            position: relative;
+
+            z-index: 1;
+
+        }
+
 
         .stat {
-            background: #0f172a;
-            border-radius: 12px;
-            padding: 12px 5px;
+
+            background:
+                rgba(255,255,255,.045);
+
+            border:
+                1px solid
+                rgba(255,255,255,.06);
+
+            border-radius: 18px;
+
+            padding: 17px;
+
         }
 
-        .stat-number {
-            font-size: 22px;
-            font-weight: bold;
+
+        .stat-icon {
+
+            font-size: 18px;
+
+            margin-bottom: 9px;
+
         }
+
+
+        .stat-value {
+
+            font-size: 24px;
+
+            font-weight: 850;
+
+        }
+
 
         .stat-label {
-            color: #94a3b8;
+
+            color: var(--muted);
+
             font-size: 12px;
-            margin-top: 4px;
+
+            margin-top: 3px;
+
         }
 
-        /* =========================
-           BUNK / RECOVERY
-        ========================= */
 
-        .bunk-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 12px;
-            background: #064e3b;
+        /* =====================================================
+           BUNK MESSAGE
+        ===================================================== */
+
+        .smart-message {
+
+            margin-top: 18px;
+
+            padding: 15px 17px;
+
+            border-radius: 16px;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
+            position: relative;
+
+            z-index: 1;
+
         }
 
-        .recovery-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 12px;
-            background: #7f1d1d;
+
+        .smart-good {
+
+            background:
+                rgba(34,197,94,.08);
+
+            border:
+                1px solid
+                rgba(34,197,94,.16);
+
+            color: #bbf7d0;
+
         }
 
-        /* =========================
-           SECTION
-        ========================= */
+
+        .smart-bad {
+
+            background:
+                rgba(239,68,68,.08);
+
+            border:
+                1px solid
+                rgba(239,68,68,.16);
+
+            color: #fecaca;
+
+        }
+
+
+        /* =====================================================
+           SECTION HEADER
+        ===================================================== */
+
+        .section-header {
+
+            display: flex;
+
+            align-items: flex-end;
+
+            justify-content: space-between;
+
+            margin-bottom: 13px;
+
+        }
+
 
         .section-title {
-            margin: 25px 0 12px;
-            font-size: 22px;
+
+            font-size: 20px;
+
+            letter-spacing: -.4px;
+
         }
 
-        /* =========================
-           LECTURE CARD
-        ========================= */
+
+        .section-subtitle {
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            margin-top: 4px;
+
+        }
+
+
+        /* =====================================================
+           DATE CARD
+        ===================================================== */
+
+        .date-card {
+
+            border-radius: var(--radius);
+
+            padding: 23px;
+
+        }
+
+
+        .date-heading {
+
+            display: flex;
+
+            gap: 12px;
+
+            align-items: center;
+
+            margin-bottom: 17px;
+
+        }
+
+
+        .date-icon {
+
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 13px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(139,92,246,.2),
+                    rgba(59,130,246,.18)
+                );
+
+            font-size: 20px;
+
+        }
+
+
+        .date-heading h3 {
+
+            font-size: 17px;
+
+        }
+
+
+        .date-heading p {
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+            margin-top: 3px;
+
+        }
+
+
+        .date-form {
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+
+        .date-input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            padding: 13px 14px;
+
+            border-radius: 13px;
+
+            border:
+                1px solid
+                rgba(255,255,255,.08);
+
+            background:
+                rgba(0,0,0,.18);
+
+            color: white;
+
+            outline: none;
+
+            font-size: 14px;
+
+        }
+
+
+        .date-input:focus {
+
+            border-color:
+                rgba(139,92,246,.6);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(139,92,246,.1);
+
+        }
+
+
+        .load-btn {
+
+            border: none;
+
+            border-radius: 13px;
+
+            padding: 0 19px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--blue)
+                );
+
+            color: white;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .load-btn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 10px 25px
+                rgba(99,102,241,.25);
+
+        }
+
+
+        .selected-date {
+
+            margin-top: 14px;
+
+            color: var(--muted);
+
+            font-size: 12px;
+
+        }
+
+
+        .selected-date strong {
+
+            color: white;
+
+        }
+
+
+        /* =====================================================
+           LECTURES
+        ===================================================== */
+
+        .lectures-section {
+
+            border-radius: var(--radius);
+
+            padding: 23px;
+
+        }
+
 
         .lecture-card {
-            background: #1e293b;
-            border-radius: 16px;
+
+            border-radius: 19px;
+
             padding: 18px;
+
             margin-bottom: 12px;
+
+            background:
+                rgba(255,255,255,.035);
+
+            border:
+                1px solid
+                rgba(255,255,255,.07);
+
+            transition:
+                transform .2s,
+                border-color .2s,
+                background .2s;
+
+            scroll-margin-top: 25px;
+
         }
 
-        .lecture-header {
+
+        .lecture-card:hover {
+
+            transform: translateY(-2px);
+
+            border-color:
+                rgba(139,92,246,.25);
+
+            background:
+                rgba(255,255,255,.05);
+
+        }
+
+
+        .lecture-card:target {
+
+            border-color:
+                rgba(139,92,246,.65);
+
+            box-shadow:
+                0 0 30px
+                rgba(139,92,246,.12);
+
+        }
+
+
+        .lecture-top {
+
             display: flex;
-            justify-content: space-between;
+
             align-items: center;
-            gap: 10px;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
         }
 
-        .lecture-name {
-            font-size: 18px;
-            font-weight: bold;
+
+        .lecture-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            min-width: 0;
+
         }
+
 
         .lecture-number {
-            color: #94a3b8;
+
+            width: 42px;
+            height: 42px;
+
+            flex-shrink: 0;
+
+            border-radius: 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(139,92,246,.18),
+                    rgba(59,130,246,.14)
+                );
+
+            color: #c4b5fd;
+
             font-size: 13px;
-            margin-top: 4px;
+
+            font-weight: 900;
+
         }
+
+
+        .lecture-subject {
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .lecture-code {
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-top: 3px;
+
+        }
+
 
         .lecture-time {
-            color: #94a3b8;
-            margin-top: 8px;
-            font-size: 14px;
+
+            color: #cbd5e1;
+
+            font-size: 12px;
+
+            white-space: nowrap;
+
         }
 
-        .teacher {
-            color: #64748b;
-            margin-top: 4px;
-            font-size: 13px;
-        }
 
-        /* =========================
-           BUTTONS
-        ========================= */
+        .lecture-meta {
 
-        .buttons {
             display: flex;
-            gap: 10px;
+
+            gap: 14px;
+
+            margin-top: 12px;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+        }
+
+
+        /* =====================================================
+           ACTION BUTTONS
+        ===================================================== */
+
+        .actions {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 9px;
+
             margin-top: 15px;
+
         }
 
-        .buttons form {
-            flex: 1;
-        }
 
-        button {
+        .actions form {
+
             width: 100%;
+
+        }
+
+
+        .action-btn {
+
+            width: 100%;
+
             border: none;
-            border-radius: 10px;
-            padding: 13px 8px;
-            font-size: 14px;
-            font-weight: bold;
+
+            border-radius: 12px;
+
+            padding: 12px 8px;
+
+            font-size: 12px;
+
+            font-weight: 850;
+
             cursor: pointer;
+
+            transition: .18s;
+
         }
 
-        .present {
-            background: #16a34a;
-            color: white;
+
+        .action-btn:hover {
+
+            transform: translateY(-1px);
+
         }
 
-        .bunk {
-            background: #dc2626;
-            color: white;
+
+        .action-present {
+
+            background:
+                rgba(34,197,94,.13);
+
+            border:
+                1px solid
+                rgba(34,197,94,.23);
+
+            color: #86efac;
+
         }
 
-        .not-held {
-            background: #475569;
-            color: white;
-            margin-top: 10px;
+
+        .action-bunk {
+
+            background:
+                rgba(239,68,68,.12);
+
+            border:
+                1px solid
+                rgba(239,68,68,.23);
+
+            color: #fca5a5;
+
         }
 
-        button:active {
-            transform: scale(0.97);
-        }
 
-        /* =========================
-           SAVED STATUS
-        ========================= */
+        .action-not-held {
 
-        .status {
             width: 100%;
-            padding: 14px;
-            border-radius: 10px;
+
+            margin-top: 9px;
+
+            background:
+                rgba(148,163,184,.08);
+
+            border:
+                1px solid
+                rgba(148,163,184,.14);
+
+            color: #cbd5e1;
+
+        }
+
+
+        .action-change {
+
+            width: 100%;
+
+            margin-top: 9px;
+
+            background:
+                rgba(139,92,246,.1);
+
+            border:
+                1px solid
+                rgba(139,92,246,.2);
+
+            color: #c4b5fd;
+
+        }
+
+
+        /* =====================================================
+           STATUS
+        ===================================================== */
+
+        .saved-status {
+
+            margin-top: 14px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 11px 13px;
+
+            border-radius: 12px;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+        }
+
+
+        .saved-present {
+
+            color: #86efac;
+
+            background:
+                rgba(34,197,94,.09);
+
+        }
+
+
+        .saved-bunk {
+
+            color: #fca5a5;
+
+            background:
+                rgba(239,68,68,.09);
+
+        }
+
+
+        .saved-not-held {
+
+            color: #cbd5e1;
+
+            background:
+                rgba(148,163,184,.08);
+
+        }
+
+
+        /* =====================================================
+           SUBJECT PERFORMANCE
+        ===================================================== */
+
+        .subjects-card {
+
+            border-radius: var(--radius);
+
+            padding: 23px;
+
+        }
+
+
+        .subject {
+
+            margin-top: 17px;
+
+        }
+
+
+        .subject-top {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            font-size: 12px;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .subject-name {
+
+            font-weight: 750;
+
+        }
+
+
+        .subject-percent {
+
+            color: var(--muted);
+
+        }
+
+
+        .progress {
+
+            height: 7px;
+
+            border-radius: 20px;
+
+            background:
+                rgba(255,255,255,.07);
+
+            overflow: hidden;
+
+        }
+
+
+        .progress-bar {
+
+            height: 100%;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--purple),
+                    var(--blue)
+                );
+
+        }
+
+
+        .subject-stats {
+
+            display: flex;
+
+            gap: 12px;
+
+            margin-top: 6px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+
+        }
+
+
+        /* =====================================================
+           EMPTY
+        ===================================================== */
+
+        .empty {
+
             text-align: center;
-            font-weight: bold;
-            margin-top: 15px;
+
+            padding: 35px 15px;
+
+            color: var(--muted);
+
         }
 
-        .present-status {
-            background: #166534;
-            color: #bbf7d0;
+
+        .empty-icon {
+
+            font-size: 34px;
+
+            margin-bottom: 10px;
+
         }
 
-        .bunk-status {
-            background: #991b1b;
-            color: #fecaca;
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+
+        .footer {
+
+            text-align: center;
+
+            color: #475569;
+
+            font-size: 11px;
+
+            margin-top: 35px;
+
         }
 
-        .not-held-status {
-            background: #475569;
-            color: #e2e8f0;
+
+        /* =====================================================
+           TABLET
+        ===================================================== */
+
+        @media (max-width: 1000px) {
+
+            .dashboard-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .right-column {
+
+                position: static;
+
+            }
+
         }
 
-        .change-button {
-            background: #334155;
-            color: white;
-            margin-top: 8px;
-        }
 
-        /* =========================
+        /* =====================================================
            MOBILE
-        ========================= */
+        ===================================================== */
 
-        @media (max-width: 500px) {
+        @media (max-width: 650px) {
 
-            .container {
-                width: 94%;
-                padding-top: 18px;
+            .app {
+
+                width: min(
+                    100% - 22px,
+                    600px
+                );
+
+                padding-top: 15px;
+
             }
 
-            .header h1 {
-                font-size: 27px;
+
+            .topbar {
+
+                margin-bottom: 18px;
+
             }
 
-            .percentage {
-                font-size: 45px;
+
+            .brand-icon {
+
+                width: 44px;
+                height: 44px;
+
+                border-radius: 14px;
+
+                font-size: 21px;
+
             }
 
-            .stats {
-                gap: 6px;
+
+            .brand-text h1 {
+
+                font-size: 21px;
+
             }
+
+
+            .brand-text p {
+
+                font-size: 11px;
+
+            }
+
+
+            .date-badge {
+
+                display: none;
+
+            }
+
+
+            .dashboard-grid {
+
+                gap: 15px;
+
+            }
+
+
+            .left-column,
+            .right-column {
+
+                gap: 15px;
+
+            }
+
+
+            .hero {
+
+                padding: 20px;
+
+                border-radius: 23px;
+
+            }
+
+
+            .hero-title {
+
+                font-size: 24px;
+
+            }
+
+
+            .ring {
+
+                width: 175px;
+                height: 175px;
+
+            }
+
+
+            .ring::before {
+
+                width: 137px;
+                height: 137px;
+
+            }
+
+
+            .ring-value {
+
+                font-size: 34px;
+
+            }
+
+
+            .stats-grid {
+
+                gap: 7px;
+
+            }
+
 
             .stat {
-                padding: 10px 3px;
+
+                padding: 12px 9px;
+
+                border-radius: 14px;
+
             }
 
-            .stat-number {
+
+            .stat-value {
+
                 font-size: 19px;
+
             }
 
-            .buttons {
-                gap: 8px;
+
+            .stat-label {
+
+                font-size: 10px;
+
+            }
+
+
+            .date-card,
+            .lectures-section,
+            .subjects-card {
+
+                padding: 17px;
+
+                border-radius: 20px;
+
+            }
+
+
+            .date-form {
+
+                flex-direction: column;
+
+            }
+
+
+            .load-btn {
+
+                min-height: 46px;
+
+            }
+
+
+            .lecture-card {
+
+                padding: 15px;
+
+            }
+
+
+            .lecture-time {
+
+                font-size: 10px;
+
+            }
+
+
+            .lecture-number {
+
+                width: 38px;
+                height: 38px;
+
+                border-radius: 11px;
+
+            }
+
+
+            .lecture-subject {
+
+                font-size: 15px;
+
+            }
+
+
+            .lecture-meta {
+
+                flex-wrap: wrap;
+
+            }
+
+        }
+
+
+        /* =====================================================
+           VERY SMALL PHONES
+        ===================================================== */
+
+        @media (max-width: 380px) {
+
+            .stats-grid {
+
+                grid-template-columns:
+                    repeat(3, 1fr);
+
+            }
+
+
+            .stat {
+
+                padding: 10px 5px;
+
+            }
+
+
+            .stat-value {
+
+                font-size: 17px;
+
+            }
+
+
+            .actions {
+
+                gap: 6px;
+
+            }
+
+
+            .action-btn {
+
+                font-size: 11px;
+
             }
 
         }
@@ -304,418 +1686,994 @@
 
 <body>
 
-<div class="container">
 
-    <!-- HEADER -->
-
-    <div class="header">
-
-        <h1>
-            📚 AttendWise
-        </h1>
-
-        <p>
-            Personal Attendance Tracker
-        </p>
-
-    </div>
+<div class="app">
 
 
-    <!-- ATTENDANCE SUMMARY -->
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-    <div class="attendance-card">
-
-        <p class="required">
-            Overall Attendance
-        </p>
+    <header class="topbar">
 
 
-        {% if percentage >= 75 %}
+        <div class="brand">
 
-            <div class="percentage safe">
-                {{ percentage }}%
-            </div>
-
-            <p class="safe">
-                🟢 SAFE
-            </p>
-
-        {% elif percentage >= 70 %}
-
-            <div class="percentage warning">
-                {{ percentage }}%
-            </div>
-
-            <p class="warning">
-                🟡 BE CAREFUL
-            </p>
-
-        {% else %}
-
-            <div class="percentage danger">
-                {{ percentage }}%
-            </div>
-
-            <p class="danger">
-                🔴 BELOW 75%
-            </p>
-
-        {% endif %}
-
-
-        <p class="required">
-            Minimum Required: 75%
-        </p>
-
-
-        <!-- STATISTICS -->
-
-        <div class="stats">
-
-            <div class="stat">
-
-                <div class="stat-number">
-                    {{ present }}
-                </div>
-
-                <div class="stat-label">
-                    Present
-                </div>
-
+            <div class="brand-icon">
+                ✦
             </div>
 
 
-            <div class="stat">
+            <div class="brand-text">
 
-                <div class="stat-number">
-                    {{ bunked }}
-                </div>
+                <h1>
+                    AttendWise
+                </h1>
 
-                <div class="stat-label">
-                    Bunked
-                </div>
-
-            </div>
-
-
-            <div class="stat">
-
-                <div class="stat-number">
-                    {{ conducted }}
-                </div>
-
-                <div class="stat-label">
-                    Conducted
-                </div>
+                <p>
+                    Your attendance, simplified.
+                </p>
 
             </div>
 
         </div>
 
 
-        <!-- BUNK CALCULATOR -->
+        <div class="date-badge">
 
-        {% if percentage >= 75 %}
+            📅
 
-            <div class="bunk-box">
+            {{ today|date:"d M Y" }}
 
-                🟢 You can safely bunk approximately
-
-                <strong>
-                    {{ possible_bunks }}
-                </strong>
-
-                more lecture(s).
-
-            </div>
-
-        {% else %}
-
-            <div class="recovery-box">
-
-                🔴 You need to attend approximately
-
-                <strong>
-                    {{ lectures_needed }}
-                </strong>
-
-                consecutive lecture(s) to reach 75%.
-
-            </div>
-
-        {% endif %}
-
-    </div>
+        </div>
 
 
-    <!-- TODAY'S LECTURES -->
-
-    <h2 class="section-title">
-        Today's Lectures
-    </h2>
+    </header>
 
 
-    <p class="required">
+    <!-- =====================================================
+         DASHBOARD GRID
+    ====================================================== -->
 
-        {{ today_name }}
-
-        —
-
-        {{ today|date:"d M Y" }}
-
-    </p>
+    <main class="dashboard-grid">
 
 
-    {% for lecture in todays_lectures %}
+        <!-- =================================================
+             LEFT COLUMN
+        ================================================== -->
 
-        <div class="lecture-card">
+        <section class="left-column">
 
 
-            <!-- LECTURE HEADER -->
+            <!-- =============================================
+                 ATTENDANCE HERO
+            ============================================== -->
 
-            <div class="lecture-header">
+            <div class="hero glass">
 
-                <div>
 
-                    <div class="lecture-name">
-                        {{ lecture.subject.name }}
+                <div class="hero-top">
+
+
+                    <div>
+
+                        <div class="hero-label">
+                            Overall Attendance
+                        </div>
+
+                        <div class="hero-title">
+                            Attendance Score
+                        </div>
+
                     </div>
 
-                    <div class="lecture-number">
-                        Lecture {{ lecture.lecture_number }}
+
+                    {% if percentage >= 75 %}
+
+                        <div class="status-pill status-safe">
+                            ● SAFE
+                        </div>
+
+                    {% elif percentage >= 70 %}
+
+                        <div class="status-pill status-warning">
+                            ● WARNING
+                        </div>
+
+                    {% else %}
+
+                        <div class="status-pill status-danger">
+                            ● LOW
+                        </div>
+
+                    {% endif %}
+
+
+                </div>
+
+
+                <!-- RING -->
+
+                <div class="ring-area">
+
+                    <div class="ring">
+
+                        <div class="ring-content">
+
+                            <div class="ring-value">
+
+                                {{ percentage }}%
+
+                            </div>
+
+                            <div class="ring-target">
+
+                                Target 75%
+
+                            </div>
+
+                        </div>
+
                     </div>
 
                 </div>
 
+
+                <!-- STATS -->
+
+                <div class="stats-grid">
+
+
+                    <div class="stat">
+
+                        <div class="stat-icon">
+                            ✓
+                        </div>
+
+                        <div class="stat-value">
+                            {{ present }}
+                        </div>
+
+                        <div class="stat-label">
+                            Present
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-icon">
+                            ×
+                        </div>
+
+                        <div class="stat-value">
+                            {{ bunked }}
+                        </div>
+
+                        <div class="stat-label">
+                            Bunked
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-icon">
+                            ◉
+                        </div>
+
+                        <div class="stat-value">
+                            {{ conducted }}
+                        </div>
+
+                        <div class="stat-label">
+                            Conducted
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- SMART MESSAGE -->
+
+                {% if percentage >= 75 %}
+
+                    <div class="smart-message smart-good">
+
+                        🟢 You can safely bunk approximately
+
+                        <strong>
+                            {{ possible_bunks }}
+                        </strong>
+
+                        more lecture(s) while maintaining 75%.
+
+                    </div>
+
+                {% else %}
+
+                    <div class="smart-message smart-bad">
+
+                        🔴 You need approximately
+
+                        <strong>
+                            {{ lectures_needed }}
+                        </strong>
+
+                        more consecutive lecture(s) to reach 75%.
+
+                    </div>
+
+                {% endif %}
+
+
             </div>
 
 
-            <!-- TIME -->
+            <!-- =============================================
+                 DATE SELECTOR
+            ============================================== -->
 
-            <div class="lecture-time">
+            <div class="date-card glass">
 
-                {{ lecture.start_time|time:"H:i" }}
 
-                -
+                <div class="date-heading">
 
-                {{ lecture.end_time|time:"H:i" }}
+
+                    <div class="date-icon">
+                        📅
+                    </div>
+
+
+                    <div>
+
+                        <h3>
+                            Attendance Date
+                        </h3>
+
+                        <p>
+                            View or update previous attendance
+                        </p>
+
+                    </div>
+
+
+                </div>
+
+
+                <form
+                    method="GET"
+                    action="/"
+                    class="date-form"
+                >
+
+
+                    <input
+                        type="date"
+                        name="date"
+                        class="date-input"
+                        value="{{ selected_date_value }}"
+                        max="{{ today|date:'Y-m-d' }}"
+                        required
+                    >
+
+
+                    <button
+                        type="submit"
+                        class="load-btn"
+                    >
+
+                        Load Date
+
+                    </button>
+
+
+                </form>
+
+
+                <div class="selected-date">
+
+                    Selected:
+
+                    <strong>
+                        {{ selected_date|date:"l, d F Y" }}
+                    </strong>
+
+                </div>
+
 
             </div>
 
 
-            <!-- TEACHER -->
+            <!-- =============================================
+                 LECTURES
+            ============================================== -->
 
-            {% if lecture.teacher %}
-
-                <div class="teacher">
-
-                    Faculty:
-                    {{ lecture.teacher }}
-
-                </div>
-
-            {% endif %}
+            <div class="lectures-section glass">
 
 
-            <!-- ATTENDANCE STATUS -->
-
-            {% if lecture.today_status == "PRESENT" %}
-
-                <!-- PRESENT -->
-
-                <div class="status present-status">
-
-                    ✓ PRESENT
-
-                </div>
+                <div class="section-header">
 
 
-                <!-- CHANGE TO BUNK -->
+                    <div>
 
-                <form
-                    method="POST"
-                    action="{% url 'mark_attendance' lecture.id %}"
-                >
+                        <div class="section-title">
+                            Today's Lectures
+                        </div>
 
-                    {% csrf_token %}
+                        <div class="section-subtitle">
 
-                    <input
-                        type="hidden"
-                        name="status"
-                        value="BUNK"
-                    >
+                            {{ selected_date|date:"l, d M Y" }}
 
-                    <button
-                        type="submit"
-                        class="change-button"
-                    >
+                        </div>
 
-                        Change to Bunk
+                    </div>
 
-                    </button>
-
-                </form>
-
-
-            {% elif lecture.today_status == "BUNK" %}
-
-                <!-- BUNK -->
-
-                <div class="status bunk-status">
-
-                    ✕ BUNK
 
                 </div>
 
 
-                <!-- CHANGE TO PRESENT -->
+                <!-- =========================================
+                     LECTURE LOOP
+                ========================================== -->
 
-                <form
-                    method="POST"
-                    action="{% url 'mark_attendance' lecture.id %}"
-                >
+                {% for lecture in todays_lectures %}
 
-                    {% csrf_token %}
 
-                    <input
-                        type="hidden"
-                        name="status"
-                        value="PRESENT"
+                    <div
+                        class="lecture-card"
+                        id="lecture-{{ lecture.id }}"
                     >
 
-                    <button
-                        type="submit"
-                        class="change-button"
-                    >
 
-                        Change to Present
+                        <!-- TOP -->
 
-                    </button>
-
-                </form>
+                        <div class="lecture-top">
 
 
-            {% elif lecture.today_status == "NOT_HELD" %}
+                            <div class="lecture-left">
 
-                <!-- NOT HELD -->
 
-                <div class="status not-held-status">
+                                <div class="lecture-number">
 
-                    — NOT HELD
+                                    {{ lecture.lecture_number|stringformat:"02d" }}
+
+                                </div>
+
+
+                                <div>
+
+                                    <div class="lecture-subject">
+
+                                        {{ lecture.subject.name }}
+
+                                    </div>
+
+
+                                    {% if lecture.subject.code %}
+
+                                        <div class="lecture-code">
+
+                                            {{ lecture.subject.code }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="lecture-time">
+
+                                {{ lecture.start_time|time:"H:i" }}
+
+                                —
+
+                                {{ lecture.end_time|time:"H:i" }}
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- META -->
+
+                        <div class="lecture-meta">
+
+
+                            {% if lecture.teacher %}
+
+                                <span>
+                                    👨‍🏫 {{ lecture.teacher }}
+                                </span>
+
+                            {% endif %}
+
+
+                            {% if lecture.compulsory %}
+
+                                <span>
+                                    ● Compulsory
+                                </span>
+
+                            {% else %}
+
+                                <span>
+                                    ○ Optional
+                                </span>
+
+                            {% endif %}
+
+
+                        </div>
+
+
+                        <!-- =================================
+                             PRESENT
+                        ================================== -->
+
+                        {% if lecture.today_status == "PRESENT" %}
+
+
+                            <div
+                                class="saved-status saved-present"
+                            >
+
+                                <span>
+                                    ✓ PRESENT
+                                </span>
+
+                                <span>
+                                    Attendance saved
+                                </span>
+
+                            </div>
+
+
+                            <form
+                                method="POST"
+                                action="{% url 'mark_attendance' lecture.id %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="attendance_date"
+                                    value="{{ selected_date_value }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="status"
+                                    value="BUNK"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="action-btn action-change"
+                                >
+
+                                    Change to Bunk
+
+                                </button>
+
+                            </form>
+
+
+                        <!-- =================================
+                             BUNK
+                        ================================== -->
+
+                        {% elif lecture.today_status == "BUNK" %}
+
+
+                            <div
+                                class="saved-status saved-bunk"
+                            >
+
+                                <span>
+                                    ✕ BUNK
+                                </span>
+
+                                <span>
+                                    Attendance saved
+                                </span>
+
+                            </div>
+
+
+                            <form
+                                method="POST"
+                                action="{% url 'mark_attendance' lecture.id %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="attendance_date"
+                                    value="{{ selected_date_value }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="status"
+                                    value="PRESENT"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="action-btn action-change"
+                                >
+
+                                    Change to Present
+
+                                </button>
+
+                            </form>
+
+
+                        <!-- =================================
+                             NOT HELD
+                        ================================== -->
+
+                        {% elif lecture.today_status == "NOT_HELD" %}
+
+
+                            <div
+                                class="saved-status saved-not-held"
+                            >
+
+                                <span>
+                                    — NOT HELD
+                                </span>
+
+                                <span>
+                                    Not counted
+                                </span>
+
+                            </div>
+
+
+                            <form
+                                method="POST"
+                                action="{% url 'mark_attendance' lecture.id %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="attendance_date"
+                                    value="{{ selected_date_value }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="status"
+                                    value="PRESENT"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="action-btn action-change"
+                                >
+
+                                    Change to Present
+
+                                </button>
+
+                            </form>
+
+
+                        <!-- =================================
+                             NOT MARKED
+                        ================================== -->
+
+                        {% else %}
+
+
+                            <div class="actions">
+
+
+                                <!-- PRESENT -->
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'mark_attendance' lecture.id %}"
+                                >
+
+                                    {% csrf_token %}
+
+
+                                    <input
+                                        type="hidden"
+                                        name="attendance_date"
+                                        value="{{ selected_date_value }}"
+                                    >
+
+
+                                    <input
+                                        type="hidden"
+                                        name="status"
+                                        value="PRESENT"
+                                    >
+
+
+                                    <button
+                                        type="submit"
+                                        class="action-btn action-present"
+                                    >
+
+                                        ✓ PRESENT
+
+                                    </button>
+
+                                </form>
+
+
+                                <!-- BUNK -->
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'mark_attendance' lecture.id %}"
+                                >
+
+                                    {% csrf_token %}
+
+
+                                    <input
+                                        type="hidden"
+                                        name="attendance_date"
+                                        value="{{ selected_date_value }}"
+                                    >
+
+
+                                    <input
+                                        type="hidden"
+                                        name="status"
+                                        value="BUNK"
+                                    >
+
+
+                                    <button
+                                        type="submit"
+                                        class="action-btn action-bunk"
+                                    >
+
+                                        ✕ BUNK
+
+                                    </button>
+
+                                </form>
+
+
+                            </div>
+
+
+                            <!-- NOT HELD -->
+
+                            <form
+                                method="POST"
+                                action="{% url 'mark_attendance' lecture.id %}"
+                            >
+
+                                {% csrf_token %}
+
+
+                                <input
+                                    type="hidden"
+                                    name="attendance_date"
+                                    value="{{ selected_date_value }}"
+                                >
+
+
+                                <input
+                                    type="hidden"
+                                    name="status"
+                                    value="NOT_HELD"
+                                >
+
+
+                                <button
+                                    type="submit"
+                                    class="action-btn action-not-held"
+                                >
+
+                                    — NOT HELD
+
+                                </button>
+
+                            </form>
+
+
+                        {% endif %}
+
+
+                    </div>
+
+
+                {% empty %}
+
+
+                    <div class="empty">
+
+                        <div class="empty-icon">
+                            🎉
+                        </div>
+
+                        <div>
+                            No lectures scheduled.
+                        </div>
+
+                        <div style="margin-top:5px;">
+                            Try another date.
+                        </div>
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+        </section>
+
+
+        <!-- =================================================
+             RIGHT COLUMN
+        ================================================== -->
+
+        <aside class="right-column">
+
+
+            <!-- =============================================
+                 SUBJECT PERFORMANCE
+            ============================================== -->
+
+            <div class="subjects-card glass">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <div class="section-title">
+                            Subject Performance
+                        </div>
+
+                        <div class="section-subtitle">
+                            Your attendance by subject
+                        </div>
+
+                    </div>
 
                 </div>
 
 
-            {% else %}
-
-                <!-- NOT MARKED -->
-
-                <div class="buttons">
+                {% for item in subject_data %}
 
 
-                    <!-- PRESENT -->
-
-                    <form
-                        method="POST"
-                        action="{% url 'mark_attendance' lecture.id %}"
-                    >
-
-                        {% csrf_token %}
-
-                        <input
-                            type="hidden"
-                            name="status"
-                            value="PRESENT"
-                        >
-
-                        <button
-                            type="submit"
-                            class="present"
-                        >
-
-                            ✓ PRESENT
-
-                        </button>
-
-                    </form>
+                    <div class="subject">
 
 
-                    <!-- BUNK -->
+                        <div class="subject-top">
 
-                    <form
-                        method="POST"
-                        action="{% url 'mark_attendance' lecture.id %}"
-                    >
 
-                        {% csrf_token %}
+                            <span class="subject-name">
 
-                        <input
-                            type="hidden"
-                            name="status"
-                            value="BUNK"
-                        >
+                                {{ item.subject.name }}
 
-                        <button
-                            type="submit"
-                            class="bunk"
-                        >
+                            </span>
 
-                            ✕ BUNK
 
-                        </button>
+                            <span class="subject-percent">
 
-                    </form>
+                                {{ item.percentage }}%
+
+                            </span>
+
+
+                        </div>
+
+
+                        <div class="progress">
+
+                            <div
+                                class="progress-bar"
+                                style="
+                                    width:
+                                    {% if item.percentage > 100 %}
+                                        100
+                                    {% else %}
+                                        {{ item.percentage }}
+                                    {% endif %}%;
+                                "
+                            ></div>
+
+                        </div>
+
+
+                        <div class="subject-stats">
+
+                            <span>
+                                ✓ {{ item.present }} Present
+                            </span>
+
+                            <span>
+                                ✕ {{ item.bunked }} Bunk
+                            </span>
+
+                            <span>
+                                {{ item.conducted }} Conducted
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                {% empty %}
+
+
+                    <div class="empty">
+
+                        No subject attendance yet.
+
+                    </div>
+
+
+                {% endfor %}
+
+
+            </div>
+
+
+            <!-- =============================================
+                 ATTENDANCE GUIDE
+            ============================================== -->
+
+            <div class="subjects-card glass">
+
+
+                <div class="section-header">
+
+                    <div>
+
+                        <div class="section-title">
+                            Attendance Guide
+                        </div>
+
+                        <div class="section-subtitle">
+                            Keep your attendance healthy
+                        </div>
+
+                    </div>
 
                 </div>
 
 
-                <!-- NOT HELD -->
+                <div class="subject">
 
-                <form
-                    method="POST"
-                    action="{% url 'mark_attendance' lecture.id %}"
-                >
+                    <div class="subject-top">
 
-                    {% csrf_token %}
+                        <span class="subject-name">
+                            🟢 Safe Zone
+                        </span>
 
-                    <input
-                        type="hidden"
-                        name="status"
-                        value="NOT_HELD"
-                    >
+                        <span class="subject-percent">
+                            75%+
+                        </span>
 
-                    <button
-                        type="submit"
-                        class="not-held"
-                    >
+                    </div>
 
-                        — NOT HELD
+                    <div class="progress">
 
-                    </button>
+                        <div
+                            class="progress-bar"
+                            style="width: 100%;"
+                        ></div>
 
-                </form>
+                    </div>
 
-
-            {% endif %}
+                </div>
 
 
-        </div>
+                <div class="subject">
+
+                    <div class="subject-top">
+
+                        <span class="subject-name">
+                            🟡 Warning
+                        </span>
+
+                        <span class="subject-percent">
+                            70–74%
+                        </span>
+
+                    </div>
+
+                    <div class="progress">
+
+                        <div
+                            class="progress-bar"
+                            style="width: 74%;"
+                        ></div>
+
+                    </div>
+
+                </div>
 
 
-    {% empty %}
+                <div class="subject">
 
-        <div class="lecture-card">
+                    <div class="subject-top">
 
-            <p>
-                🎉 No lectures scheduled today.
-            </p>
+                        <span class="subject-name">
+                            🔴 Critical
+                        </span>
 
-        </div>
+                        <span class="subject-percent">
+                            Below 70%
+                        </span>
 
-    {% endfor %}
+                    </div>
+
+                    <div class="progress">
+
+                        <div
+                            class="progress-bar"
+                            style="width: 50%;"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </aside>
+
+
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="footer">
+
+        AttendWise • Smart Attendance Management
+
+    </div>
 
 
 </div>
+
 
 </body>
 
