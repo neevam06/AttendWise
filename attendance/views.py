@@ -27,6 +27,7 @@ def dashboard(request):
 
     today = timezone.localdate()
 
+
     # =====================================================
     # SELECTED DATE
     # =====================================================
@@ -48,6 +49,7 @@ def dashboard(request):
 
             selected_date = today
 
+
     # =====================================================
     # PREVENT FUTURE DATE
     # =====================================================
@@ -55,6 +57,7 @@ def dashboard(request):
     if selected_date > today:
 
         selected_date = today
+
 
     # =====================================================
     # PREVENT DATE BEFORE SEMESTER
@@ -64,11 +67,13 @@ def dashboard(request):
 
         selected_date = SEMESTER_START_DATE
 
+
     # =====================================================
     # SELECTED DAY
     # =====================================================
 
     selected_day_name = selected_date.strftime("%A")
+
 
     # =====================================================
     # GET LECTURES FOR SELECTED DAY
@@ -84,6 +89,7 @@ def dashboard(request):
 
     )
 
+
     # =====================================================
     # ATTENDANCE FOR SELECTED DATE
     # =====================================================
@@ -98,6 +104,7 @@ def dashboard(request):
 
     }
 
+
     # =====================================================
     # ADD STATUS TO LECTURES
     # =====================================================
@@ -108,8 +115,22 @@ def dashboard(request):
             lecture.id
         )
 
+
     # =====================================================
     # ALL ATTENDANCE RECORDS
+    # =====================================================
+    #
+    # IMPORTANT:
+    # Do NOT filter by compulsory=True.
+    #
+    # Your imported attendance data can contain records
+    # where compulsory is False.
+    #
+    # We want the dashboard to count all actual attendance
+    # records from the semester.
+    #
+    # NOT_HELD lectures are excluded because they were not
+    # actually conducted.
     # =====================================================
 
     records = (
@@ -118,8 +139,7 @@ def dashboard(request):
 
         .filter(
             date__gte=SEMESTER_START_DATE,
-            date__lte=today,
-            timetable__compulsory=True
+            date__lte=today
         )
 
         .exclude(
@@ -127,6 +147,7 @@ def dashboard(request):
         )
 
     )
+
 
     # =====================================================
     # OVERALL ATTENDANCE
@@ -142,6 +163,7 @@ def dashboard(request):
         status="BUNK"
     ).count()
 
+
     # =====================================================
     # PERCENTAGE
     # =====================================================
@@ -156,6 +178,7 @@ def dashboard(request):
 
         percentage = 0
 
+
     # =====================================================
     # POSSIBLE BUNKS
     # =====================================================
@@ -167,7 +190,6 @@ def dashboard(request):
         possible_bunks = int(
 
             (present / 0.75)
-
             - conducted
 
         )
@@ -176,6 +198,7 @@ def dashboard(request):
             possible_bunks,
             0
         )
+
 
     # =====================================================
     # LECTURES NEEDED TO REACH 75%
@@ -195,11 +218,13 @@ def dashboard(request):
 
         )
 
+
     # =====================================================
     # SUBJECT-WISE ATTENDANCE
     # =====================================================
 
     subject_data = []
+
 
     subject_ids = (
 
@@ -214,6 +239,7 @@ def dashboard(request):
 
     )
 
+
     for subject_id in subject_ids:
 
         subject_records = records.filter(
@@ -221,6 +247,11 @@ def dashboard(request):
             timetable__subject_id=subject_id
 
         )
+
+
+        # -----------------------------------------------
+        # GET FIRST RECORD
+        # -----------------------------------------------
 
         first_record = (
 
@@ -234,9 +265,11 @@ def dashboard(request):
 
         )
 
+
         if first_record is None:
 
             continue
+
 
         # -----------------------------------------------
         # SUBJECT COUNTS
@@ -245,6 +278,7 @@ def dashboard(request):
         subject_conducted = (
             subject_records.count()
         )
+
 
         subject_present = (
 
@@ -258,6 +292,7 @@ def dashboard(request):
 
         )
 
+
         subject_bunked = (
 
             subject_records
@@ -269,6 +304,7 @@ def dashboard(request):
             .count()
 
         )
+
 
         # -----------------------------------------------
         # SUBJECT PERCENTAGE
@@ -286,6 +322,7 @@ def dashboard(request):
         else:
 
             subject_percentage = 0
+
 
         # -----------------------------------------------
         # ADD SUBJECT
@@ -313,6 +350,7 @@ def dashboard(request):
 
         })
 
+
     # =====================================================
     # SORT SUBJECTS
     # =====================================================
@@ -323,6 +361,7 @@ def dashboard(request):
         item["subject"].name
 
     )
+
 
     # =====================================================
     # CONTEXT
@@ -379,6 +418,7 @@ def dashboard(request):
 
     }
 
+
     # =====================================================
     # RENDER DASHBOARD
     # =====================================================
@@ -416,6 +456,7 @@ def mark_attendance(
 
     )
 
+
     # =====================================================
     # GET STATUS
     # =====================================================
@@ -423,6 +464,7 @@ def mark_attendance(
     status = request.POST.get(
         "status"
     )
+
 
     # =====================================================
     # VALIDATE STATUS
@@ -440,6 +482,7 @@ def mark_attendance(
             "dashboard"
         )
 
+
     # =====================================================
     # GET DATE
     # =====================================================
@@ -450,7 +493,9 @@ def mark_attendance(
 
     )
 
+
     today = timezone.localdate()
+
 
     try:
 
@@ -471,6 +516,7 @@ def mark_attendance(
 
         attendance_date = today
 
+
     # =====================================================
     # PREVENT FUTURE DATE
     # =====================================================
@@ -479,6 +525,7 @@ def mark_attendance(
 
         attendance_date = today
 
+
     # =====================================================
     # PREVENT DATE BEFORE SEMESTER
     # =====================================================
@@ -486,6 +533,7 @@ def mark_attendance(
     if attendance_date < SEMESTER_START_DATE:
 
         attendance_date = SEMESTER_START_DATE
+
 
     # =====================================================
     # SAVE / UPDATE ATTENDANCE
@@ -505,6 +553,7 @@ def mark_attendance(
         }
 
     )
+
 
     # =====================================================
     # RETURN TO SAME DATE + SAME LECTURE
